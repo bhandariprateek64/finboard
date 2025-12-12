@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef } from 'react';
 import { useDrag, useDrop } from 'react-dnd';
 import { Widget } from '@/store/useDashboardStore';
 import FinanceCard from './widgets/FinanceCard';
@@ -21,6 +22,8 @@ export default function DraggableWidget({
   onRemove,
   onReorder,
 }: DraggableWidgetProps) {
+  const ref = useRef<HTMLDivElement>(null);
+
   const [{ isDragging }, drag] = useDrag(
     () => ({
       type: ITEM_TYPE,
@@ -45,10 +48,8 @@ export default function DraggableWidget({
     [index, onReorder]
   );
 
-  // Merge drag and drop refs
-  const ref = (element: HTMLDivElement) => {
-    drag(drop(element));
-  };
+  // Properly connect both drag and drop to ref
+  drag(drop(ref));
 
   const renderWidget = () => {
     switch (widget.type) {
@@ -66,8 +67,8 @@ export default function DraggableWidget({
     <div
       ref={ref}
       className={`relative transition-all duration-200 ${
-        isDragging ? 'opacity-50' : 'opacity-100'
-      }`}
+        isDragging ? 'opacity-50 scale-95' : 'opacity-100'
+      } cursor-grab active:cursor-grabbing`}
     >
       {/* Drag Handle */}
       <div className="absolute -top-2 -left-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs font-bold cursor-grab active:cursor-grabbing hover:bg-blue-600 z-20 opacity-0 hover:opacity-100 transition-opacity"

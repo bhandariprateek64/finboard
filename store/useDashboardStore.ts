@@ -16,6 +16,7 @@ export interface DashboardStore {
   removeWidget: (id: string) => void;
   updateWidget: (id: string, widget: Partial<Omit<Widget, 'id'>>) => void;
   reorderWidgets: (fromIndex: number, toIndex: number) => void;
+  resetWidgets: () => void;
 }
 
 export const useDashboardStore = create<DashboardStore>()(
@@ -56,6 +57,10 @@ export const useDashboardStore = create<DashboardStore>()(
           newWidgets.splice(toIndex, 0, removed);
           return { widgets: newWidgets };
         });
+      },
+
+      resetWidgets: () => {
+        set({ widgets: [] });
       },
     }),
     {

@@ -8,6 +8,7 @@ import {
   Line,
   BarChart,
   Bar,
+  ComposedChart,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -30,7 +31,7 @@ export default function ChartWidget({ widget }: ChartWidgetProps) {
     }
   );
 
-  const [chartType, setChartType] = useState<'line' | 'bar'>('line');
+  const [chartType, setChartType] = useState<'line' | 'bar' | 'candle'>('line');
 
   // Parse data for charts
   const chartData = useMemo(() => {
@@ -39,18 +40,17 @@ export default function ChartWidget({ widget }: ChartWidgetProps) {
     if (Array.isArray(data)) {
       return data.map((item, idx) => {
         if (typeof item === 'object' && item !== null) {
-          return { ...item, index: idx } as Record<string, unknown>;
+          return { ...item, _index: idx } as Record<string, unknown>;
         }
-        return { value: item, index: idx };
+        return { value: item, _index: idx };
       });
     }
 
     if (typeof data === 'object') {
-      // Convert object to array format for charting
       return Object.entries(data).map(([key, value], idx) => ({
         name: key,
         value: typeof value === 'number' ? value : 0,
-        index: idx,
+        _index: idx,
       }));
     }
 
@@ -66,13 +66,77 @@ export default function ChartWidget({ widget }: ChartWidgetProps) {
 
     return Object.keys(firstRow)
       .filter((key) => {
+        if (key === '_index' || key === 'name' || key === 'time' || key === 'date')
+          return false;
         const values = chartData.map((row) => (row as Record<string, unknown>)[key]);
         return values.some((val) => typeof val === 'number');
       })
       .slice(0, 3); // Limit to 3 series for readability
   }, [chartData]);
 
+  // Check if data is OHLC (candlestick)
+  const isOhlcData = useMemo(() => {
+    if (chartData.length === 0) return false;
+    const firstRow = chartData[0] as Record<string, unknown>;
+    const keys = Object.keys(firstRow || {});
+    const hasOhlc = ['open', 'high', 'low', 'close'].every((key) =>
+      keys.some((k) => k.toLowerCase().includes(key))
+    );
+    return hasOhlc;
+  }, [chartData]);
+
   const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'];
+
+  // Custom candlestick shape component
+  const CandleStick = (props: any) => {
+    const {
+      x,
+      y,
+      width,
+      height,
+      payload,
+      yAxis,
+    } = props;
+
+    if (!payload || payload.open === undefined) return null;
+
+    const yScale = yAxis.scale;
+    const candleWidth = Math.max(width * 0.6, 4);
+
+    // Map values to pixel positions
+    const openY = yScale(payload.open);
+    const closeY = yScale(payload.close);
+    const highY = yScale(payload.high);
+    const lowY = yScale(payload.low);
+
+    const candleX = x + width / 2;
+    const isGreen = payload.close >= payload.open;
+
+    return (
+      <g>
+        {/* Wick (high-low) */}
+        <line
+          x1={candleX}
+          y1={highY}
+          x2={candleX}
+          y2={lowY}
+          stroke={isGreen ? '#10b981' : '#ef4444'}
+          strokeWidth={1}
+        />
+
+        {/* Body (open-close) */}
+        <rect
+          x={candleX - candleWidth / 2}
+          y={Math.min(openY, closeY)}
+          width={candleWidth}
+          height={Math.abs(openY - closeY) || 1}
+          fill={isGreen ? '#10b981' : '#ef4444'}
+          stroke={isGreen ? '#059669' : '#dc2626'}
+          strokeWidth={1}
+        />
+      </g>
+    );
+  };
 
   return (
     <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow h-full flex flex-col">
@@ -94,7 +158,7 @@ export default function ChartWidget({ widget }: ChartWidgetProps) {
 
       {/* Chart Type Selector */}
       {chartData.length > 0 && !loading && !error && (
-        <div className="mb-4 flex gap-2">
+        <div className="mb-4 flex gap-2 flex-wrap">
           <button
             onClick={() => setChartType('line')}
             className={`px-3 py-1 text-xs font-medium rounded ${
@@ -115,6 +179,18 @@ export default function ChartWidget({ widget }: ChartWidgetProps) {
           >
             Bar
           </button>
+          {isOhlcData && (
+            <button
+              onClick={() => setChartType('candle')}
+              className={`px-3 py-1 text-xs font-medium rounded ${
+                chartType === 'candle'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              🕯️ Candle
+            </button>
+          )}
         </div>
       )}
 
@@ -183,7 +259,7 @@ export default function ChartWidget({ widget }: ChartWidgetProps) {
                   />
                 ))}
               </LineChart>
-            ) : (
+            ) : chartType === 'bar' ? (
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                 <XAxis
@@ -209,7 +285,50 @@ export default function ChartWidget({ widget }: ChartWidgetProps) {
                   />
                 ))}
               </BarChart>
-            )}
+            ) : chartType === 'candle' && isOhlcData ? (
+              <ComposedChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis
+                  dataKey="name"
+                  stroke="#6b7280"
+                  style={{ fontSize: '12px' }}
+                  tick={{ fill: '#6b7280' }}
+                />
+                <YAxis stroke="#6b7280" style={{ fontSize: '12px' }} />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#fff',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: '4px',
+                  }}
+                  content={({ payload }) => {
+                    if (!payload || !payload[0]) return null;
+                    const data = payload[0].payload as any;
+                    return (
+                      <div className="bg-white p-2 border border-gray-300 rounded text-xs">
+                        <p className="text-gray-700">
+                          <strong>Open:</strong> ${data.open?.toFixed(2)}
+                        </p>
+                        <p className="text-gray-700">
+                          <strong>High:</strong> ${data.high?.toFixed(2)}
+                        </p>
+                        <p className="text-gray-700">
+                          <strong>Low:</strong> ${data.low?.toFixed(2)}
+                        </p>
+                        <p className="text-gray-700">
+                          <strong>Close:</strong> ${data.close?.toFixed(2)}
+                        </p>
+                      </div>
+                    );
+                  }}
+                />
+                <Bar
+                  dataKey="close"
+                  shape={<CandleStick />}
+                  isAnimationActive={false}
+                />
+              </ComposedChart>
+            ) : null}
           </ResponsiveContainer>
         </div>
       )}

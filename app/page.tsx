@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { useDashboardStore } from '@/store/useDashboardStore';
+import Header from './components/Header';
 import AddWidgetModal from './components/AddWidgetModal';
 import DraggableWidget from './components/DraggableWidget';
 
@@ -11,6 +12,7 @@ export default function Home() {
   const widgets = useDashboardStore((state) => state.widgets);
   const removeWidget = useDashboardStore((state) => state.removeWidget);
   const reorderWidgets = useDashboardStore((state) => state.reorderWidgets);
+  const resetWidgets = useDashboardStore((state) => state.resetWidgets);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -20,35 +22,33 @@ export default function Home() {
     setIsMounted(true);
   }, []);
 
+  const handleResetDashboard = () => {
+    if (confirm('Are you sure you want to clear all widgets? This cannot be undone.')) {
+      resetWidgets();
+      localStorage.removeItem('dashboard-storage');
+    }
+  };
+
   if (!isMounted) {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-gray-900">Finance Dashboard</h1>
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium transition-colors"
-            >
-              + Add Widget
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-white dark:bg-slate-950">
+      <Header 
+        title="Finance Dashboard" 
+        onAddWidget={() => setIsModalOpen(true)}
+        onReset={handleResetDashboard}
+      />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {widgets.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-lg text-gray-500 mb-4">No widgets yet</p>
+            <p className="text-lg text-gray-500 dark:text-slate-400 mb-4">No widgets yet</p>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium transition-colors"
+              className="px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 font-medium transition-colors"
             >
               Create Your First Widget
             </button>
