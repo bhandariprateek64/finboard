@@ -30,7 +30,7 @@ const ENDPOINT_CONFIGS: Record<string, Record<string, string>> = {
   },
 };
 
-export default function AddWidgetModal({ isOpen, onClose }: AddWidgetModalProps) {
+export default function AddWidgetModal({ isOpen, onClose }: AddWidgetModalProps): React.ReactElement | null {
   const addWidget = useDashboardStore((s) => s.addWidget);
 
   // Form state grouped by purpose
@@ -42,7 +42,7 @@ export default function AddWidgetModal({ isOpen, onClose }: AddWidgetModalProps)
   const [refreshInterval, setRefreshInterval] = useState<number>(60);
 
   // API test / explorer state
-  const [apiResponseBody, setApiResponseBody] = useState<unknown>(null);
+  const [apiResponseBody, setApiResponseBody] = useState<Record<string, any> | null>(null);
   const [apiErrorMessage, setApiErrorMessage] = useState<string | null>(null);
   const [isTestingApi, setIsTestingApi] = useState(false);
   const [dataKey, setDataKey] = useState("");
@@ -190,7 +190,7 @@ export default function AddWidgetModal({ isOpen, onClose }: AddWidgetModalProps)
   };
 
   const renderJsonTree = (obj: unknown, depth = 0, maxDepth = 3, parentPath = ""): React.ReactNode => {
-    if (depth > maxDepth) return null;
+    if (depth > maxDepth) return <span className="text-xs text-gray-500">...</span>;
 
     const nodes = buildJsonTree(obj, parentPath);
 
@@ -218,7 +218,7 @@ export default function AddWidgetModal({ isOpen, onClose }: AddWidgetModalProps)
                 </button>
 
                 {expandedNodes.has(node.path) && (
-                  <div className="ml-4 border-l border-gray-300 pl-2">{renderJsonTree(node.value, depth + 1, maxDepth, node.path)}</div>
+                  <div className="ml-4 border-l border-gray-300 pl-2">{renderJsonTree(node.value, depth + 1, maxDepth, node.path) as React.ReactNode}</div>
                 )}
               </div>
             ) : (
