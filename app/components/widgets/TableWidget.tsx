@@ -71,12 +71,12 @@ export default function TableWidget({ widget }: TableWidgetProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow h-full flex flex-col">
+    <div className="bg-white dark:bg-slate-900 rounded-lg shadow p-6 hover:shadow-lg transition-shadow h-full flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900">{widget.name}</h3>
-          <p className="text-xs text-gray-500 mt-1">Table</p>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{widget.name}</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Table</p>
         </div>
         <button
           onClick={refetch}
@@ -99,7 +99,7 @@ export default function TableWidget({ widget }: TableWidgetProps) {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400 dark:placeholder-gray-500"
           />
         </div>
       )}
@@ -118,11 +118,11 @@ export default function TableWidget({ widget }: TableWidgetProps) {
 
       {/* Error State */}
       {error && (
-        <div className="flex-1 flex flex-col items-center justify-center bg-red-50 rounded p-4 mb-4">
-          <p className="text-sm font-medium text-red-800 text-center">{error}</p>
+        <div className="flex-1 flex flex-col items-center justify-center bg-red-50 dark:bg-red-900/20 rounded p-4 mb-4">
+          <p className="text-sm font-medium text-red-800 dark:text-red-300 text-center">{error}</p>
           <button
             onClick={refetch}
-            className="mt-3 px-3 py-1 text-xs font-medium text-red-600 hover:text-red-800 hover:bg-red-100 rounded"
+            className="mt-3 px-3 py-1 text-xs font-medium text-red-600 dark:text-red-300 hover:text-red-800 dark:hover:text-red-200 hover:bg-red-100 dark:hover:bg-red-900/40 rounded"
           >
             Retry
           </button>
@@ -157,12 +157,12 @@ export default function TableWidget({ widget }: TableWidgetProps) {
                 {paginatedData.map((row, idx) => (
                   <tr
                     key={idx}
-                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                    className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
                   >
                     {columns.map((col) => (
                       <td
                         key={`${idx}-${col}`}
-                        className="px-4 py-2 text-gray-800 truncate"
+                        className="px-4 py-2 text-gray-800 dark:text-gray-200 truncate"
                         title={formatValue((row as Record<string, unknown>)[col])}
                       >
                         {formatValue((row as Record<string, unknown>)[col])}

@@ -36,12 +36,12 @@ export default function FinanceCard({ widget }: FinanceCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow h-full flex flex-col">
+    <div className="bg-white dark:bg-slate-900 rounded-lg shadow p-6 hover:shadow-lg transition-shadow h-full flex flex-col">
       {/* Header */}
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
-          <h3 className="text-lg font-semibold text-gray-900">{widget.name}</h3>
-          <p className="text-xs text-gray-500 mt-1">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{widget.name}</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             {widget.type.charAt(0).toUpperCase() + widget.type.slice(1)}
           </p>
         </div>
@@ -69,8 +69,8 @@ export default function FinanceCard({ widget }: FinanceCardProps) {
 
       {/* Error State */}
       {error && (
-        <div className="flex-1 flex flex-col items-center justify-center bg-red-50 rounded p-4 mb-4">
-          <p className="text-sm font-medium text-red-800 text-center">
+        <div className="flex-1 flex flex-col items-center justify-center bg-red-50 dark:bg-red-900/20 rounded p-4 mb-4">
+          <p className="text-sm font-medium text-red-800 dark:text-red-300 text-center">
             {error}
           </p>
           <button
@@ -90,10 +90,10 @@ export default function FinanceCard({ widget }: FinanceCardProps) {
               {Object.entries(data as Record<string, unknown>).map(
                 ([key, value]) => (
                   <div key={key} className="flex justify-between items-start">
-                    <span className="text-sm text-gray-600 capitalize">
+                    <span className="text-sm text-gray-600 dark:text-gray-400 capitalize">
                       {key.replace(/_/g, ' ')}:
                     </span>
-                    <span className="text-sm font-medium text-gray-900 text-right ml-2">
+                    <span className="text-sm font-medium text-gray-900 dark:text-white text-right ml-2">
                       {formatValue(value)}
                     </span>
                   </div>
@@ -105,18 +105,18 @@ export default function FinanceCard({ widget }: FinanceCardProps) {
               <p className="text-3xl font-bold text-blue-600">
                 {formatValue(data)}
               </p>
-              <p className="text-xs text-gray-500">{widget.dataKey}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{widget.dataKey}</p>
             </div>
           )}
         </div>
       )}
 
       {/* Meta Info */}
-      <div className="border-t border-gray-100 mt-4 pt-3">
-        <p className="text-xs text-gray-500">
+      <div className="border-t border-gray-100 dark:border-gray-700 mt-4 pt-3">
+        <p className="text-xs text-gray-500 dark:text-gray-400">
           <strong>Refresh:</strong> Every {widget.refreshInterval}s
         </p>
-        <p className="text-xs text-gray-400 truncate mt-1">
+        <p className="text-xs text-gray-400 dark:text-gray-500 truncate mt-1">
           <strong>API:</strong> {widget.apiUrl}
         </p>
       </div>
